@@ -1,0 +1,105 @@
+<script setup lang="ts">
+import { Calendar, Clock, ArrowRight } from 'lucide-vue-next'
+import { highlight } from '~/utils/highlight'
+
+interface Article {
+  id: string
+  path: string
+  title: string
+  description: string
+  date: string
+  tags?: string[]
+  cover?: string
+  body?: any
+}
+
+const props = defineProps<{
+  article: Article
+  searchQuery?: string
+}>()
+
+const formattedDate = computed(() =>
+  new Date(props.article.date).toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+)
+
+const slug = computed(() => (props.article.path ?? '').replace('/blog/', ''))
+
+const readingTime = computed(() =>
+  props.article.body ? useReadingTime(props.article.body) : null
+)
+
+const highlightedTitle = computed(() =>
+  highlight(props.article.title, props.searchQuery ?? '')
+)
+const highlightedDesc = computed(() =>
+  highlight(props.article.description, props.searchQuery ?? '')
+)
+</script>
+
+<template>
+  <NuxtLink
+    :to="`/blog/${slug}`"
+    class="group flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md"
+  >
+    <!-- Miniature -->
+    <div class="h-40 w-full overflow-hidden bg-muted">
+      <img
+        v-if="article.cover"
+        :src="article.cover"
+        :alt="article.title"
+        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        loading="lazy"
+        decoding="async"
+      />
+      <div
+        v-else
+        class="h-full w-full bg-gradient-to-br from-primary/10 via-muted to-muted/50"
+      />
+    </div>
+
+    <!-- Contenu -->
+    <div class="flex flex-1 flex-col p-5">
+      <!-- Tags -->
+      <div v-if="article.tags?.length" class="mb-3 flex flex-wrap gap-1.5">
+        <UiBadge v-for="tag in article.tags.slice(0, 3)" :key="tag" variant="muted">
+          {{ tag }}
+        </UiBadge>
+      </div>
+
+      <!-- Titre -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <h2
+        class="mb-2 text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-primary"
+        v-html="highlightedTitle"
+      />
+
+      <!-- Description -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <p
+        class="mb-4 flex-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground"
+        v-html="highlightedDesc"
+      />
+
+      <!-- Méta -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3 text-xs text-muted-foreground">
+          <span class="flex items-center gap-1.5">
+            <Calendar class="h-3.5 w-3.5 shrink-0" />
+            {{ formattedDate }}
+          </span>
+          <span v-if="readingTime" class="flex items-center gap-1.5">
+            <Clock class="h-3.5 w-3.5 shrink-0" />
+            {{ readingTime }}
+          </span>
+        </div>
+        <ArrowRight
+          class="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+        />
+      </div>
+    </div>
+  </NuxtLink>
+</template>
