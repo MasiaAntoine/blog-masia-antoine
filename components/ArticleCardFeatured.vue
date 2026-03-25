@@ -11,6 +11,11 @@ interface Article {
   tags?: string[]
   cover?: string
   body?: any
+  author?: {
+    name?: string
+    role?: string
+    avatar?: string
+  }
 }
 
 const props = defineProps<{
@@ -61,6 +66,7 @@ const highlightedDesc = computed(() =>
         v-else
         :title="article.title"
         :tags="article.tags"
+        :author="article.author"
         :compact="!hero"
       />
     </div>

@@ -4,17 +4,6 @@ import { ArrowLeft, Calendar, Clock, ArrowRight } from 'lucide-vue-next'
 const route = useRoute()
 const slug = route.params.slug as string
 
-// URL de la miniature : cover explicite OU image générée par nuxt-og-image (lue depuis og:image après hydration)
-const generatedCoverUrl = ref<string | null>(null)
-onMounted(() => {
-  if (!article.value?.cover) {
-    const ogMeta = document.querySelector('meta[property="og:image"]')
-    const url = ogMeta?.getAttribute('content')
-    if (url) generatedCoverUrl.value = url
-  }
-})
-
-const coverSrc = computed(() => article.value?.cover ?? generatedCoverUrl.value)
 
 const { data: article } = await useAsyncData(`blog-${slug}`, () =>
   queryCollection('blog').path('/blog/' + slug).first()
@@ -77,6 +66,9 @@ if (article.value?.cover) {
     title: article.value?.title,
     description: article.value?.description,
     tags: article.value?.tags,
+    authorName: article.value?.author?.name,
+    authorRole: article.value?.author?.role,
+    authorAvatar: article.value?.author?.avatar,
   })
 }
 
@@ -153,8 +145,8 @@ const readingTime = computed(() =>
           <!-- Miniature -->
           <div class="mb-8 h-64 overflow-hidden rounded-xl">
             <img
-              v-if="coverSrc"
-              :src="coverSrc"
+              v-if="article.cover"
+              :src="article.cover"
               :alt="article.title"
               class="h-full w-full object-cover"
               fetchpriority="high"
@@ -164,6 +156,7 @@ const readingTime = computed(() =>
               v-else
               :title="article.title"
               :tags="article.tags"
+              :author="article.author"
             />
           </div>
 

@@ -3,6 +3,9 @@ defineProps<{
   title?: string
   description?: string
   tags?: string[]
+  authorName?: string
+  authorRole?: string
+  authorAvatar?: string
 }>()
 </script>
 
@@ -124,14 +127,14 @@ defineProps<{
       }"
     >
       <img
-        src="https://avatars.githubusercontent.com/u/115811899"
+        :src="authorAvatar || 'https://avatars.githubusercontent.com/u/115811899'"
         width="40"
         height="40"
         :style="{ borderRadius: '50%', objectFit: 'cover' }"
       />
       <div :style="{ display: 'flex', flexDirection: 'column', gap: '2px' }">
-        <span :style="{ fontSize: '15px', fontWeight: '600', color: '#e2e8f0' }">MASIA Antoine</span>
-        <span :style="{ fontSize: '13px', color: '#475569' }">Développeur Full-Stack, DevOps & CyberSécurité</span>
+        <span :style="{ fontSize: '15px', fontWeight: '600', color: '#e2e8f0' }">{{ authorName || 'MASIA Antoine' }}</span>
+        <span :style="{ fontSize: '13px', color: '#475569' }">{{ authorRole || 'Développeur Full-Stack, DevOps & CyberSécurité' }}</span>
       </div>
     </div>
   </div>
