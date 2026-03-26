@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     '@nuxt/content',
     '@nuxtjs/tailwindcss',
     'nuxt-og-image',
+    '@vercel/analytics',
   ],
 
   site: {
