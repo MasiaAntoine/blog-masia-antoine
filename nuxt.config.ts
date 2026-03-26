@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'nuxt-og-image',
     '@vercel/analytics',
+    '@vercel/speed-insights',
   ],
 
   site: {
