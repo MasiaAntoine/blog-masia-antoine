@@ -1,6 +1,6 @@
 ---
-title: "Checkbox Reka UI dans une dialog : quand la réactivité Vue ne suit pas"
-description: "Checkbox shadcn/vue (Reka UI) dans une dialog pré-remplie : quand la coche ne suit pas la donnée, et comment resynchroniser avec modelValue. Voir la doc Checkbox sur shadcn-vue.com."
+title: "Checkbox shadcn/vue (Reka UI) : synchronisation réactive et dialogs"
+description: "Guide technique : liaison d’état sur CheckboxRoot (modelValue), désynchronisation dans une dialog pré-remplie, patterns de réinitialisation et cas Record / ligne cliquable. Référence doc shadcn-vue Checkbox."
 date: '2026-03-27'
 tags: ['Vue', 'Reka UI', 'shadcn-vue', 'Interface']
 author:
@@ -9,23 +9,35 @@ author:
   avatar: 'https://avatars.githubusercontent.com/u/115811899'
 ---
 
-## Le symptôme qui rend fou
+## Contexte
 
-Tu ouvres une dialog pour éditer un truc. Les données arrivent bien : ton objet a `has_serial_number: true`, ton compteur ou ton texte à côté affiche la bonne valeur. Sauf que la case à cocher, elle, reste vide. Ou l’inverse : tu fermes, tu rouvres, et visuellement c’est n’importe quoi alors que le ref derrière est correct.
+Le composant `Checkbox` de [shadcn/vue](https://www.shadcn-vue.com/docs/components/checkbox) s’appuie sur **Reka UI** (`CheckboxRoot`). Il s’installe via le CLI (`pnpm dlx shadcn-vue@latest add checkbox`) et s’importe généralement depuis `@/components/ui/checkbox`. La documentation officielle couvre l’installation, les exemples avec `default-value` et la liaison aux labels : [Checkbox — shadcn/vue](https://www.shadcn-vue.com/docs/components/checkbox).
 
-Ça m’est arrivé avec les checkboxes **Reka UI** — c’est exactement ce que tu importes quand tu utilises le composant `Checkbox` de **shadcn/vue** (`@/components/ui/checkbox` après `pnpm dlx shadcn-vue@latest add checkbox`). Pour les bases — installation, exemples avec `default-value`, liaison au label — la doc officielle vaut le détour : [Checkbox — shadcn/vue](https://www.shadcn-vue.com/docs/components/checkbox).
+## Problème fréquent
 
-Ce n’est pas que « Vue est cassé » : c’est un décalage entre le moment où la dialog s’ouvre, le moment où le composant monte, et ce que Reka expose comme API par rapport à un `<input type="checkbox">` classique.
+Dans une **dialog** ouverte avec des **données pré-remplies**, la valeur réactive peut être correcte (ex. `has_serial_number: true`) alors que l’**état visuel** de la case ne correspond pas. Inversement, après fermeture et réouverture, l’affichage peut être incohérent malgré un ref à jour.
 
-## Pourquoi `checked` ne fait pas le job
+La cause n’est pas un dysfonctionnement général de Vue : il s’agit d’un **décalage de cycle de vie** entre l’ouverture de la modale, le montage du composant checkbox et l’API exposée par Reka, distincte d’un `<input type="checkbox">` natif.
 
-Sur un input HTML natif, tu penses `checked`. Sur `CheckboxRoot` côté Reka, ce qui compte pour lier l’état, c’est **`modelValue`** (donc `v-model` ou `:model-value` + `@update:model-value`). Si tu branches `v-model:checked` ou `:checked` sur le wrapper `Checkbox` de ton UI kit en croyant que ça suffit, tu peux te retrouver avec une donnée réactive qui bouge mais une coche qui ne suit pas — le genre de bug où tu passes une heure à regarder le store alors que le problème est la prop.
+## API : `modelValue` et non `checked`
 
-## Dialog + valeurs pré-remplies : forcer une vraie remise à zéro
+| Contexte | Liaison d’état attendue |
+| -------- | ------------------------ |
+| `<input type="checkbox">` HTML | Attribut / prop `checked` |
+| `CheckboxRoot` (Reka) / wrapper shadcn `Checkbox` | **`modelValue`** → `v-model` ou `:model-value` + `@update:model-value` |
 
-Quand la dialog s’ouvre avec un `item` déjà là, le composant checkbox a parfois déjà fait son cycle de vie avec une ancienne valeur. La solution qui tient la route chez moi : un flag du style `checkboxReady`, du `v-if` pour démonter la case le temps de fixer la valeur, et **plusieurs** `nextTick` pour laisser le DOM respirer avant de remonter le composant.
+**À éviter** sur le wrapper shadcn : `v-model:checked`, `:checked` comme seule liaison si le composant ne les mappe pas vers `modelValue`. Symptôme typique : la donnée réactive change, le compteur ou le texte affiché est correct, la coche ne suit pas.
 
-Voici le pattern complet :
+## Dialog avec valeurs initiales : remontage contrôlé
+
+Lorsque la dialog s’ouvre alors qu’un `item` est déjà disponible, le checkbox peut avoir été monté avec une valeur obsolète. Pattern recommandé :
+
+1. Drapeau **`checkboxReady`** : masquer le `Checkbox` (`v-if="checkboxReady"`) pendant la mise à jour de l’état.
+2. **`nextTick`** : un ou plusieurs appels pour laisser le DOM se stabiliser avant de réafficher le composant.
+3. **Clé dynamique** (`:key`) incluant l’identifiant de l’item et la valeur booléenne pour limiter le recyclage de composant dans un état incohérent.
+4. **Placeholder** (optionnel) : bloc neutre à la place du checkbox lorsque `checkboxReady` est `false`, pour éviter un trou de mise en page.
+
+### Exemple complet
 
 ```vue
 <script setup lang="ts">
@@ -73,11 +85,11 @@ watch(
 </template>
 ```
 
-La petite boîte grise en placeholder évite un trou bizarre pendant que `checkboxReady` est à false. La **clé dynamique** qui mélange id + valeur aide Vite/Vue à ne pas recycler un composant dans un état fantôme.
+## Sélections dans un `Record<string, boolean>`
 
-## Objets avec clés pas toujours définies
+Lorsque les clés ne sont pas toutes initialisées avant interaction utilisateur, un `v-model` direct sur une propriété potentiellement absente complique la synchronisation.
 
-Autre cas : tu stockes les sélections dans un `Record<string, boolean>` et certaines clés n’existent pas tant que l’utilisateur n’a pas interagi. Là, `v-model` direct sur une propriété potentiellement absente, c’est vite le bazar. Je préfère **`model-value`** explicite avec un booléen forcé (`!!selectedItems[item.id]`) et un handler sur `update:model-value` qui recrée l’objet proprement.
+**Approche** : exposer un booléen dérivé avec `:model-value="!!selectedItems[item.id]"` et centraliser les mises à jour dans `@update:model-value` en recréant l’objet (spread) pour conserver la réactivité.
 
 ```vue
 <script setup lang="ts">
@@ -107,8 +119,24 @@ const setItemSelected = (itemId: string, checked: boolean) => {
 </template>
 ```
 
-Si c’est la ligne entière (ou un `CommandItem`) qui toggle la sélection, tu peux laisser le parent gérer le `toggleItem` et garder la checkbox en lecture seule visuelle avec `:model-value` — et **`pointer-events-none`** sur le `Checkbox` pour éviter le double clic (ligne + case qui se battent pour la même action). J’ai ce genre de montage dans un écran type ajout groupé de numéros ; le principe est toujours le même : une seule source de vérité pour l’état, la case ne fait qu’afficher.
+`toggleItem` reste utilisable depuis un parent (ligne entière, etc.) : la case reflète l’état grâce à `:model-value`.
 
-## En résumé
+## Liste / ligne cliquable / `CommandItem`
 
-Je garde `v-model` ou `:model-value` aligné sur **`modelValue`** Reka, jamais `checked` comme si c’était du HTML brut. Pour les dialogs avec données initiales, je démonte/remonte avec `checkboxReady` + `key` + `nextTick`. Pour les maps partielles, je passe par `model-value` + update explicite. Ce n’est pas élégant sur le papier, mais en prod ça évite les heures perdues sur une coche qui ment.
+Si le parent bascule déjà la sélection (ex. `@select` sur un `CommandItem`), deux clics ne doivent pas s’additionner (ligne + checkbox).
+
+- Conserver **une seule source de vérité** côté parent.
+- Afficher l’état avec `:model-value`.
+- Appliquer **`pointer-events-none`** sur le `Checkbox` si le clic sur la ligne suffit, afin d’éviter un double basculement.
+
+## Récapitulatif
+
+| Sujet | Recommandation |
+| ----- | --------------- |
+| Liaison Reka / shadcn | `v-model` ou `:model-value` + `@update:model-value` (**`modelValue`**) |
+| À ne pas utiliser comme équivalent HTML | `v-model:checked` / `:checked` non mappés vers `modelValue` |
+| Dialog + données initiales | `checkboxReady`, `v-if`, `nextTick`, `:key` dynamique |
+| Objet partiellement rempli | `:model-value` + mise à jour immuable du `Record` |
+| Ligne + checkbox | `pointer-events-none` sur la case si le parent gère le clic |
+
+Pour les usages de base et les variantes documentées par le projet, se reporter à [Checkbox — shadcn/vue](https://www.shadcn-vue.com/docs/components/checkbox).
