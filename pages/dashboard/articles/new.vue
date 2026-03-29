@@ -340,14 +340,6 @@ const estimatedReadingTime = computed(() => {
             <Sparkles class="h-4 w-4" />
             Pré-remplir les champs
           </button>
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            @click="showImportPanel = false"
-          >
-            <X class="h-4 w-4" />
-            Passer
-          </button>
         </div>
       </div>
     </div>
@@ -635,8 +627,17 @@ const estimatedReadingTime = computed(() => {
 
       </div>
 
-      <!-- Navigation entre les étapes -->
-      <div class="mt-6 flex items-center justify-between">
+      <!-- Espace pour compenser la barre fixe -->
+      <div class="h-20" />
+
+    </template>
+
+    <!-- ── Barre de navigation fixe en bas ───────────────────── -->
+    <div
+      v-if="mode && !showImportPanel"
+      class="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm lg:left-60"
+    >
+      <div class="flex items-center justify-between px-6 py-3 lg:px-8">
         <button
           v-if="currentStep > 1"
           type="button"
@@ -661,7 +662,6 @@ const estimatedReadingTime = computed(() => {
           </button>
         </div>
       </div>
-
-    </template>
+    </div>
   </div>
 </template>
