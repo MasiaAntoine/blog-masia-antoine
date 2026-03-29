@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Search, X } from 'lucide-vue-next'
+import type { PublicArticle } from '~/types/article'
 
 const { data: articles } = await useAsyncData('articles', () =>
-  queryCollection('blog').order('date', 'DESC').all()
+  $fetch<PublicArticle[]>('/api/articles')
 )
 
 import { SITE_URL } from '~/utils/site'
@@ -245,7 +246,7 @@ watch(isFiltering, () => {
         </div>
 
         <div class="mb-4">
-          <ArticleCardFeatured :article="featuredArticles[0]" :hero="true" />
+          <ArticleCardFeatured v-if="featuredArticles[0]" :article="featuredArticles[0]" :hero="true" />
         </div>
 
         <div v-if="featuredArticles.length > 1" class="grid grid-cols-1 gap-4 sm:grid-cols-2">

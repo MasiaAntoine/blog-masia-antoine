@@ -2,7 +2,7 @@
 interface Props {
   name: string
   role: string
-  avatar: string
+  avatar?: string | null
   profileUrl?: string
 }
 
@@ -13,7 +13,7 @@ defineProps<Props>()
   <div class="flex items-center gap-4 rounded-xl border border-border bg-muted/40 p-5">
     <!-- Avatar -->
     <a
-      v-if="profileUrl"
+      v-if="profileUrl && avatar"
       :href="profileUrl"
       target="_blank"
       rel="noopener noreferrer"
@@ -29,7 +29,7 @@ defineProps<Props>()
       />
     </a>
     <img
-      v-else
+      v-else-if="avatar"
       :src="avatar"
       :alt="name"
       width="64"

@@ -1,6 +1,6 @@
 services:
 
-  # ─── Blog (Nuxt 3 SSG + Nginx) ────────────────────────────────────────────
+  # ─── Blog (Nuxt SSR) ──────────────────────────────────────────────────────
   web:
     build:
       context: .
@@ -8,15 +8,20 @@ services:
       target: production
     container_name: blog-masia-antoine
     ports:
-      - "3001:80"
+      - "3001:3000"
     restart: unless-stopped
     environment:
       - NUXT_PUBLIC_SITE_URL=https://blog.masia-antoine.fr
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      # Override runtimeConfig.public.supabase.{url,key} à l'exécution
+      - NUXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NUXT_PUBLIC_SUPABASE_KEY=${SUPABASE_KEY}
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/robots.txt"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/robots.txt"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
     labels:
-      - "com.blog.description=Blog Antoine Masia — Nuxt 3 SSG"
+      - "com.blog.description=Blog Antoine Masia — Nuxt SSR"

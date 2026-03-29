@@ -3,49 +3,35 @@ export default defineNuxtConfig({
   devtools: { enabled: process.env.NODE_ENV === 'development' },
 
   modules: [
-    '@nuxt/content',
+    '@nuxtjs/supabase',
     '@nuxtjs/tailwindcss',
     'nuxt-og-image',
+    '@nuxtjs/color-mode',
     '@vercel/analytics',
     '@vercel/speed-insights',
   ],
+
+  supabase: {
+    redirect: false,
+    types: '~/types/database.types.ts',
+  },
 
   site: {
     url: process.env.NUXT_PUBLIC_SITE_URL ?? 'https://blog.masia-antoine.fr',
     name: "Le Blog d'Antoine",
   },
 
-  ogImage: {
-    fonts: ['Inter:400', 'Inter:700'],
-    defaults: {
-      renderer: 'satori',
-    },
-  },
+  ogImage: {},
 
-  content: {
-    highlight: {
-      theme: 'github-light',
-      langs: ['js', 'ts', 'vue', 'bash', 'json', 'css', 'html', 'markdown'],
-    },
-    markdown: {
-      toc: {
-        depth: 3,
-        searchDepth: 3,
-      },
-    },
-    build: {
-      pathPrefix: false,
-    },
+  // SSR + ISR : pages publiques cachées à l'edge, revalidées toutes les 60s
+  routeRules: {
+    '/':         { isr: 60 },
+    '/blog/**':  { isr: 60 },
+    '/dashboard/**': { ssr: true },
+    '/auth/**':  { ssr: true },
   },
 
   css: ['~/assets/css/main.css'],
-
-  nitro: {
-    prerender: {
-      crawlLinks: true,
-      routes: ['/', '/sitemap.xml'],
-    },
-  },
 
   app: {
     head: {

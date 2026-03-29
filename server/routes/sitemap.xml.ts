@@ -1,14 +1,29 @@
+import { serverSupabaseClient } from '#supabase/server'
+
 const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL ?? 'https://blog.masia-antoine.fr'
 
 export default defineEventHandler(async (event) => {
-  const docs = await queryCollection(event, 'blog').all()
+  const client = await serverSupabaseClient(event)
 
-  const staticRoutes = [
+  const { data: docs } = await client
+    .from('articles')
+    .select('slug, date')
+    .eq('published', true)
+    .order('date', { ascending: false })
+
+  interface SitemapEntry {
+    url: string
+    priority: string
+    changefreq: string
+    lastmod?: string
+  }
+
+  const staticRoutes: SitemapEntry[] = [
     { url: '/', priority: '1.0', changefreq: 'weekly' },
   ]
 
-  const contentRoutes = docs.map((doc) => ({
-    url: doc.path ?? '/',
+  const contentRoutes: SitemapEntry[] = (docs ?? []).map((doc: { slug: string; date: string }) => ({
+    url: `/blog/${doc.slug}`,
     priority: '0.7',
     changefreq: 'monthly',
     lastmod: doc.date ? new Date(doc.date).toISOString() : undefined,

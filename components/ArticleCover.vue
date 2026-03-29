@@ -4,10 +4,10 @@ defineProps<{
   tags?: string[]
   compact?: boolean
   author?: {
-    name?: string
-    role?: string
-    avatar?: string
-  }
+    name?: string | null
+    role?: string | null
+    avatar?: string | null
+  } | null
 }>()
 </script>
 
@@ -52,8 +52,8 @@ defineProps<{
     >
       <img
         v-if="author.avatar"
-        :src="author.avatar"
-        :alt="author.name"
+        :src="author.avatar ?? ''"
+        :alt="author.name ?? ''"
         class="h-8 w-8 shrink-0 rounded-full object-cover"
       />
       <div class="min-w-0">

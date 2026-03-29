@@ -2,19 +2,10 @@
 import { Calendar, Clock, ArrowRight } from 'lucide-vue-next'
 import { highlight } from '~/utils/highlight'
 
-interface Article {
-  id: string
-  path: string
-  title: string
-  description: string
-  date: string
-  tags?: string[]
-  cover?: string
-  body?: any
-}
+import type { PublicArticle } from '~/types/article'
 
 const props = defineProps<{
-  article: Article
+  article: PublicArticle
   searchQuery?: string
 }>()
 
@@ -27,10 +18,6 @@ const formattedDate = computed(() =>
 )
 
 const slug = computed(() => (props.article.path ?? '').replace('/blog/', ''))
-
-const readingTime = computed(() =>
-  props.article.body ? useReadingTime(props.article.body) : null
-)
 
 const highlightedTitle = computed(() =>
   highlight(props.article.title, props.searchQuery ?? '')
@@ -91,9 +78,9 @@ const highlightedDesc = computed(() =>
             <Calendar class="h-3.5 w-3.5 shrink-0" />
             {{ formattedDate }}
           </span>
-          <span v-if="readingTime" class="flex items-center gap-1.5">
+          <span v-if="article.readingTime" class="flex items-center gap-1.5">
             <Clock class="h-3.5 w-3.5 shrink-0" />
-            {{ readingTime }}
+            {{ article.readingTime }}
           </span>
         </div>
         <ArrowRight
