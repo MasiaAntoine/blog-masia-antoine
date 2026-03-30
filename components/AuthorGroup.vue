@@ -21,14 +21,7 @@ function initials(name: string) {
 </script>
 
 <template>
-  <div v-if="profiles.length" class="mb-16">
-    <div class="mb-6 flex items-center gap-3">
-      <h2 class="text-xl font-semibold text-foreground">Les auteurs</h2>
-      <span class="h-px flex-1 bg-border" />
-    </div>
-
-    <!-- Avatar Group -->
-    <div class="flex -space-x-3">
+  <div v-if="profiles.length" class="flex -space-x-3">
       <div
         v-for="profile in profiles"
         :key="profile.id"
@@ -45,6 +38,5 @@ function initials(name: string) {
           <p class="mt-0.5 text-xs text-muted-foreground">{{ profile.role }}</p>
         </div>
       </div>
-    </div>
   </div>
 </template>

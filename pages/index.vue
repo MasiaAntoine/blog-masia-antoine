@@ -149,11 +149,14 @@ watch(isFiltering, () => {
         Ce qu'on <span class="text-primary">apprend</span>,<br class="hidden sm:block" />
         ce qu'on <span class="text-primary">maîtrise</span>.
       </h1>
-      <p class="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+      <p class="mb-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
         Des auteurs aux parcours différents — tech, psychologie, finance et bien d'autres —
         qui partagent ce qu'ils explorent vraiment.
         <span class="text-foreground font-medium">Pas de filtre, juste ce qu'on vit.</span>
       </p>
+
+      <!-- Avatars des auteurs -->
+      <AuthorGroup v-if="profiles?.length" :profiles="profiles" />
     </section>
 
     <!-- ── Recherche + Tags ──────────────────────────────────── -->
@@ -243,9 +246,6 @@ watch(isFiltering, () => {
 
     <!-- ══ MODE NORMAL ════════════════════════════════════════ -->
     <template v-else>
-      <!-- Auteurs -->
-      <AuthorGroup v-if="profiles?.length" :profiles="profiles" />
-
       <!-- Articles en vedette (top 3) -->
       <section v-if="featuredArticles.length" class="mb-16">
         <div class="mb-8 flex items-center gap-3">
