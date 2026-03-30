@@ -6,6 +6,11 @@ const { data: articles } = await useAsyncData('articles', () =>
   $fetch<PublicArticle[]>('/api/articles')
 )
 
+interface Profile { id: string; name: string; role: string; avatar_url: string | null }
+const { data: profiles } = await useAsyncData('profiles', () =>
+  $fetch<Profile[]>('/api/profiles')
+)
+
 import { SITE_URL } from '~/utils/site'
 
 useSeoMeta({
@@ -141,13 +146,13 @@ watch(isFiltering, () => {
         Le Blog d'Antoine
       </p>
       <h1 class="mb-5 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-        Ce que j'<span class="text-primary">apprends</span>,<br class="hidden sm:block" />
-        ce que je <span class="text-primary">maîtrise</span>.
+        Ce qu'on <span class="text-primary">apprend</span>,<br class="hidden sm:block" />
+        ce qu'on <span class="text-primary">maîtrise</span>.
       </h1>
       <p class="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-        Un espace pour documenter mes apprentissages — surtout de la tech, mais pas que.
-        Veille technique, guides pratiques, retours d'expérience sur des projets concrets.
-        <span class="text-foreground font-medium">Pas de filtre, juste ce que j'explore.</span>
+        Des auteurs aux parcours différents — tech, psychologie, finance et bien d'autres —
+        qui partagent ce qu'ils explorent vraiment.
+        <span class="text-foreground font-medium">Pas de filtre, juste ce qu'on vit.</span>
       </p>
     </section>
 
@@ -238,6 +243,9 @@ watch(isFiltering, () => {
 
     <!-- ══ MODE NORMAL ════════════════════════════════════════ -->
     <template v-else>
+      <!-- Auteurs -->
+      <AuthorGroup v-if="profiles?.length" :profiles="profiles" />
+
       <!-- Articles en vedette (top 3) -->
       <section v-if="featuredArticles.length" class="mb-16">
         <div class="mb-8 flex items-center gap-3">
