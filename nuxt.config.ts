@@ -2,6 +2,11 @@
 export default defineNuxtConfig({
   devtools: { enabled: process.env.NODE_ENV === 'development' },
 
+  devServer: {
+    host: process.env.NUXT_HOST ?? 'localhost',
+    port: Number(process.env.NUXT_PORT ?? 3000),
+  },
+
   modules: [
     '@nuxtjs/supabase',
     '@nuxtjs/tailwindcss',

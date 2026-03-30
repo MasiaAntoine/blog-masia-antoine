@@ -1,27 +1,24 @@
 services:
-
-  # ─── Blog (Nuxt SSR) ──────────────────────────────────────────────────────
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    container_name: blog-masia-antoine
+    image: node:20-slim
+    container_name: blog-masia-antoine-dev
+    working_dir: /app
     ports:
       - "3001:3000"
-    restart: unless-stopped
+    volumes:
+      # Code source monté en direct → HMR actif, aucun rebuild nécessaire
+      - .:/app
+      # Volume anonyme pour node_modules → isolé du host
+      - /app/node_modules
     environment:
-      - NUXT_PUBLIC_SITE_URL=https://blog.masia-antoine.fr
+      - NODE_ENV=development
+      - NUXT_PUBLIC_SITE_URL=http://localhost:3001
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      # Override runtimeConfig.public.supabase.{url,key} à l'exécution
       - NUXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
       - NUXT_PUBLIC_SUPABASE_KEY=${SUPABASE_KEY}
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/robots.txt"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
+      - NUXT_HOST=0.0.0.0
+      - NUXT_PORT=3000
+    command: sh -c "npm install --legacy-peer-deps && npm run dev"
     labels:
-      - "com.blog.description=Blog Antoine Masia — Nuxt SSR"
+      - "com.blog.description=Blog Antoine Masia — Nuxt DEV (HMR)"

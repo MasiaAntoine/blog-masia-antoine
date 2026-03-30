@@ -49,7 +49,7 @@ const highlightedDesc = computed(() =>
         :title="article.title"
         :tags="article.tags"
         :author="article.author"
-        :compact="!hero"
+        :size="hero ? 'lg' : 'md'"
       />
     </div>
 
@@ -84,8 +84,8 @@ const highlightedDesc = computed(() =>
       />
 
       <!-- Méta + CTA -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4 text-xs text-muted-foreground">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span class="flex items-center gap-1.5">
             <Calendar class="h-3.5 w-3.5 shrink-0" />
             {{ formattedDate }}
@@ -96,7 +96,7 @@ const highlightedDesc = computed(() =>
           </span>
         </div>
         <span
-          class="flex items-center gap-1.5 text-xs font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         >
           Lire
           <ArrowRight class="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />

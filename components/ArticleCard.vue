@@ -33,7 +33,7 @@ const highlightedDesc = computed(() =>
     class="group flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md"
   >
     <!-- Miniature -->
-    <div class="h-40 w-full overflow-hidden bg-muted">
+    <div class="h-48 w-full overflow-hidden bg-muted">
       <img
         v-if="article.cover"
         :src="article.cover"
@@ -42,9 +42,12 @@ const highlightedDesc = computed(() =>
         loading="lazy"
         decoding="async"
       />
-      <div
+      <ArticleCover
         v-else
-        class="h-full w-full bg-gradient-to-br from-primary/10 via-muted to-muted/50"
+        :title="article.title"
+        :tags="article.tags"
+        :author="article.author"
+        size="sm"
       />
     </div>
 
