@@ -17,6 +17,12 @@ title: "Titre accrocheur de l'article"
 description: "Résumé en 1-2 phrases percutantes (120-160 caractères)."
 date: "YYYY-MM-DD"
 tags: ["Tag1", "Tag2", "Tag3"]
+product:                               # optionnel — à inclure uniquement si pertinent
+  title: "Nom du livre ou produit"
+  description: "Accroche courte contextualisée à l'article."
+  url: "https://www.amazon.fr/..."
+  image: "https://..."
+  cta: "Voir sur Amazon"
 ---
 
 ## Première section
