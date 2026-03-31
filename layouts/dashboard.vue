@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LayoutDashboard, FileText, User, LogOut, ExternalLink, ChevronRight } from 'lucide-vue-next'
+import { LayoutDashboard, FileText, User, LogOut, ExternalLink, ChevronRight, BarChart2 } from 'lucide-vue-next'
 
 const client = useSupabaseClient()
 const route = useRoute()
@@ -19,6 +19,7 @@ onMounted(async () => {
 
 const navLinks = [
   { to: '/dashboard/articles', label: 'Articles', icon: FileText },
+  { to: '/dashboard/stats', label: 'Statistiques', icon: BarChart2 },
   { to: '/dashboard/profile', label: 'Mon profil', icon: User },
 ]
 

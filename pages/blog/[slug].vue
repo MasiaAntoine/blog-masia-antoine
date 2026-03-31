@@ -13,6 +13,11 @@ if (!article.value) {
   throw createError({ statusCode: 404, statusMessage: 'Article introuvable' })
 }
 
+// Tracking des vues (uniquement côté client, après hydratation)
+if (import.meta.client && article.value?.id) {
+  usePageTracking(article.value.id)
+}
+
 // Articles précédent et suivant
 const { data: allArticles } = await useAsyncData('all-slugs', () =>
   $fetch<PublicArticle[]>('/api/articles')
@@ -191,6 +196,7 @@ const readingTime = computed(() => article.value?.readingTime ?? null)
         <!-- Placement produit -->
         <ProductPlacement
           v-if="article.product"
+          :article-id="article.id"
           :title="article.product.title"
           :description="article.product.description"
           :url="article.product.url"

@@ -28,13 +28,23 @@ export default defineNuxtConfig({
 
   ogImage: {},
 
-  // SSR + ISR : pages publiques cachées à l'edge, revalidées toutes les 60s
-  routeRules: {
-    '/':         { isr: 60 },
-    '/blog/**':  { isr: 60 },
-    '/dashboard/**': { ssr: true },
-    '/auth/**':  { ssr: true },
-  },
+  // En production (Vercel) : ISR sur les pages publiques pour les cacher à l'edge.
+  // En local Docker : ssr: true uniquement — l'ISR y utilise un cache fichier
+  // qui peut se corrompre si un fichier "blog" existe déjà à l'endroit
+  // où Nuxt tente de créer le dossier "blog/".
+  routeRules: process.env.NODE_ENV === 'production'
+    ? {
+        '/':            { isr: 60 },
+        '/blog/**':     { isr: 60 },
+        '/dashboard/**': { ssr: true },
+        '/auth/**':     { ssr: true },
+      }
+    : {
+        '/':            { ssr: true },
+        '/blog/**':     { ssr: true },
+        '/dashboard/**': { ssr: true },
+        '/auth/**':     { ssr: true },
+      },
 
   css: ['~/assets/css/main.css'],
 

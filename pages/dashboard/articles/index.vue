@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus, Eye, EyeOff, Pencil, Trash2, ExternalLink, AlertTriangle } from 'lucide-vue-next'
+import { Plus, Eye, EyeOff, Pencil, Trash2, ExternalLink, AlertTriangle, BarChart2 } from 'lucide-vue-next'
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '~/components/ui/dialog'
 
 definePageMeta({ middleware: 'dashboard', layout: 'dashboard' })
@@ -208,6 +208,15 @@ function formatDate(date: string) {
                   <EyeOff v-if="article.published" class="h-4 w-4" />
                   <Eye v-else class="h-4 w-4" />
                 </button>
+
+                <!-- Stats -->
+                <NuxtLink
+                  :to="`/dashboard/articles/${article.id}/stats`"
+                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                  title="Statistiques"
+                >
+                  <BarChart2 class="h-4 w-4" />
+                </NuxtLink>
 
                 <!-- Modifier -->
                 <NuxtLink

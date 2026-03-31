@@ -1,11 +1,30 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
+  articleId: string
   title: string
   description: string
   url: string
   image: string
   cta?: string
 }>()
+
+function getSessionId(): string {
+  const key = 'blog_session_id'
+  let id = sessionStorage.getItem(key)
+  if (!id) {
+    id = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)
+    sessionStorage.setItem(key, id)
+  }
+  return id
+}
+
+function trackClick() {
+  // Fire-and-forget — ne bloque pas la navigation
+  $fetch('/api/track/click', {
+    method: 'POST',
+    body: { article_id: props.articleId, session_id: getSessionId() },
+  }).catch(() => {})
+}
 </script>
 
 <template>
@@ -20,6 +39,7 @@ defineProps<{
       rel="noopener noreferrer sponsored"
       class="mx-auto shrink-0 sm:mx-0"
       :aria-label="`Voir ${title}`"
+      @click="trackClick"
     >
       <img
         :src="image"
@@ -45,10 +65,11 @@ defineProps<{
         target="_blank"
         rel="noopener noreferrer sponsored"
         class="inline-flex w-fit items-center gap-1.5 self-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 sm:self-start"
+        @click="trackClick"
       >
         {{ cta ?? 'Voir sur Amazon' }}
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
+          <path d="M7 7h10v10" /><path d="M7 17 17 7" />
         </svg>
       </a>
     </div>

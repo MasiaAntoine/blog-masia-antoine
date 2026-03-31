@@ -30,6 +30,72 @@ export interface Database {
         }
         Relationships: []
       }
+      product_clicks: {
+        Row: {
+          id: string
+          article_id: string
+          session_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          session_id: string
+          created_at?: string
+        }
+        Update: Record<string, never>
+        Relationships: [
+          {
+            foreignKeyName: 'product_clicks_article_id_fkey'
+            columns: ['article_id']
+            referencedRelation: 'articles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      page_views: {
+        Row: {
+          id: string
+          article_id: string
+          session_id: string
+          referrer: string | null
+          referrer_domain: string | null
+          os: string | null
+          device_type: string | null
+          country: string | null
+          country_code: string | null
+          city: string | null
+          user_agent: string | null
+          duration_seconds: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          session_id: string
+          referrer?: string | null
+          referrer_domain?: string | null
+          os?: string | null
+          device_type?: string | null
+          country?: string | null
+          country_code?: string | null
+          city?: string | null
+          user_agent?: string | null
+          duration_seconds?: number
+          created_at?: string
+        }
+        Update: {
+          duration_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'page_views_article_id_fkey'
+            columns: ['article_id']
+            referencedRelation: 'articles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       articles: {
         Row: {
           id: string
