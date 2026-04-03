@@ -122,6 +122,14 @@ const formattedDate = computed(() => {
 
 const tocLinks = computed(() => article.value?.toc ?? [])
 const readingTime = computed(() => article.value?.readingTime ?? null)
+
+function trackSidebarClick() {
+  if (!article.value?.id) return
+  const key = 'blog_session_id'
+  const id = sessionStorage.getItem(key)
+    ?? (() => { const s = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2); sessionStorage.setItem(key, s); return s })()
+  $fetch('/api/track/click', { method: 'POST', body: { article_id: article.value.id, session_id: id } }).catch(() => {})
+}
 </script>
 
 <template>
@@ -263,9 +271,50 @@ const readingTime = computed(() => article.value?.readingTime ?? null)
         </nav>
       </article>
 
-      <!-- Table des matières -->
+      <!-- Table des matières + mini produit -->
       <aside class="hidden lg:block lg:self-start lg:sticky lg:top-24">
         <TableOfContents :links="tocLinks" />
+
+        <!-- Mini placement produit -->
+        <div v-if="article.product" class="mt-6 border-t border-border pt-6">
+          <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Pour aller plus loin
+          </p>
+          <div class="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3">
+            <a
+              :href="article.product.url"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="shrink-0"
+              :aria-label="`Voir ${article.product.title}`"
+              @click="trackSidebarClick"
+            >
+              <img
+                :src="article.product.image"
+                :alt="article.product.title"
+                class="h-20 w-14 rounded-lg object-cover shadow-sm transition-transform duration-200 hover:scale-105"
+                loading="lazy"
+              />
+            </a>
+            <div class="min-w-0 space-y-2">
+              <p class="text-xs font-semibold leading-snug text-foreground">
+                {{ article.product.title }}
+              </p>
+              <a
+                :href="article.product.url"
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                class="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                @click="trackSidebarClick"
+              >
+                {{ article.product.cta ?? 'Voir sur Amazon' }}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
       </aside>
     </div>
   </div>
