@@ -12,7 +12,9 @@ const emit = defineEmits<{
 }>()
 
 type ViewMode = 'editor' | 'preview' | 'split'
-const viewMode = ref<ViewMode>('split')
+
+// Split inutilisable sur mobile : on commence en mode éditeur
+const viewMode = ref<ViewMode>('editor')
 
 const previewHtml = ref('')
 
@@ -34,9 +36,9 @@ function handleInput(e: Event) {
 const emptyPlaceholder = '<p class="text-muted-foreground text-sm">L\'aperçu apparaîtra ici…</p>'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const views: { id: ViewMode; icon: any; label: string }[] = [
+const views: { id: ViewMode; icon: any; label: string; mobileHidden?: boolean }[] = [
   { id: 'editor', icon: Code2, label: 'Éditeur' },
-  { id: 'split', icon: Columns2, label: 'Split' },
+  { id: 'split', icon: Columns2, label: 'Split', mobileHidden: true },
   { id: 'preview', icon: Eye, label: 'Aperçu' },
 ]
 </script>
@@ -53,7 +55,8 @@ const views: { id: ViewMode; icon: any; label: string }[] = [
           type="button"
           :title="v.label"
           :class="[
-            'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+            'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors touch-manipulation',
+            v.mobileHidden ? 'hidden sm:flex' : 'flex',
             viewMode === v.id
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground',
@@ -67,7 +70,7 @@ const views: { id: ViewMode; icon: any; label: string }[] = [
     </div>
 
     <!-- Zone editor / split / preview -->
-    <div class="flex flex-1 overflow-hidden" style="min-height: 480px">
+    <div class="flex flex-1 overflow-hidden" style="min-height: clamp(320px, 50dvh, 480px)">
       <!-- Textarea -->
       <div
         :class="[

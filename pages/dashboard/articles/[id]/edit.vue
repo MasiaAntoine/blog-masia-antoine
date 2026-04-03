@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {
   ChevronRight, ChevronLeft, Check, Loader2,
-  Plus, Package, AlertCircle, Wand2, Save,
+  Plus, Package, AlertCircle, Wand2, Save, BookmarkPlus,
 } from 'lucide-vue-next'
+import type { ComponentPublicInstance } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 
 definePageMeta({ middleware: 'dashboard', layout: 'dashboard' })
@@ -159,6 +160,41 @@ function removeTag(tag: string) {
 
 function onTagKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag() }
+}
+
+// ── Suggestions produit ────────────────────────────────────────
+const presetPicker = ref<ComponentPublicInstance & { refresh: () => void } | null>(null)
+const savingPreset = ref(false)
+const presetSaved = ref(false)
+
+async function saveAsPreset() {
+  if (!form.value.product.title || !form.value.product.url) return
+  savingPreset.value = true
+  try {
+    await $fetch('/api/product-presets', {
+      method: 'POST',
+      body: {
+        title: form.value.product.title,
+        description: form.value.product.description,
+        url: form.value.product.url,
+        image: form.value.product.image,
+        cta: form.value.product.cta,
+      },
+    })
+    presetSaved.value = true
+    presetPicker.value?.refresh()
+    setTimeout(() => { presetSaved.value = false }, 2500)
+  }
+  catch { /* silent */ }
+  finally { savingPreset.value = false }
+}
+
+function applyPreset(preset: { title: string; description: string; url: string; image: string; cta: string }) {
+  form.value.product.title = preset.title
+  form.value.product.description = preset.description
+  form.value.product.url = preset.url
+  form.value.product.image = preset.image
+  form.value.product.cta = preset.cta
 }
 
 // ── Sauvegarde ─────────────────────────────────────────────────
@@ -419,6 +455,13 @@ const estimatedReadingTime = computed(() => {
           </div>
 
           <template v-if="form.product.enabled">
+            <!-- Suggestions enregistrées -->
+            <DashboardProductPresetPicker
+              ref="presetPicker"
+              @apply="applyPreset"
+            />
+
+            <!-- Champs du produit -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div class="sm:col-span-2">
                 <label class="mb-1.5 block text-sm font-medium text-foreground">Nom du produit</label>
@@ -445,6 +488,29 @@ const estimatedReadingTime = computed(() => {
                 <input v-model="form.product.cta" type="text" placeholder="Voir sur Amazon"
                   class="w-full rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
               </div>
+            </div>
+
+            <!-- Enregistrer comme suggestion -->
+            <div class="flex items-center justify-between gap-4 rounded-xl border border-dashed border-border px-4 py-3">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-foreground">Enregistrer dans mes suggestions</p>
+                <p class="text-xs text-muted-foreground">
+                  Sauvegardez ce produit pour le réutiliser en un clic sur vos prochains articles.
+                </p>
+              </div>
+              <button
+                type="button"
+                :disabled="!form.product.title || !form.product.url || savingPreset"
+                class="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                :class="presetSaved ? 'text-green-600 border-green-500/40' : 'text-muted-foreground'"
+                :title="!form.product.title || !form.product.url ? 'Remplissez au moins le nom et l\'URL' : ''"
+                @click="saveAsPreset"
+              >
+                <Check v-if="presetSaved && !savingPreset" class="h-4 w-4" />
+                <Loader2 v-else-if="savingPreset" class="h-4 w-4 animate-spin" />
+                <BookmarkPlus v-else class="h-4 w-4" />
+                {{ savingPreset ? 'Sauvegarde…' : presetSaved ? 'Enregistré !' : 'Enregistrer' }}
+              </button>
             </div>
           </template>
 
@@ -505,12 +571,13 @@ const estimatedReadingTime = computed(() => {
       <div class="h-20" />
 
       <!-- Barre navigation fixe -->
-      <div class="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm lg:left-60">
-        <div class="flex items-center justify-between px-6 py-3 lg:px-8">
+      <div class="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm lg:left-60" style="padding-bottom: env(safe-area-inset-bottom, 0px)">
+        <p v-if="stepError" class="px-4 pt-2 text-center text-xs text-destructive sm:hidden">{{ stepError }}</p>
+        <div class="flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <button
             v-if="currentStep > 1"
             type="button"
-            class="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+            class="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground touch-manipulation"
             @click="prevStep"
           >
             <ChevronLeft class="h-4 w-4" />
@@ -519,11 +586,11 @@ const estimatedReadingTime = computed(() => {
           <div v-else />
 
           <div class="flex items-center gap-3">
-            <p v-if="stepError" class="text-sm text-destructive">{{ stepError }}</p>
+            <p v-if="stepError" class="hidden text-sm text-destructive sm:block">{{ stepError }}</p>
             <button
               v-if="currentStep < STEPS.length"
               type="button"
-              class="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              class="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 touch-manipulation"
               @click="nextStep"
             >
               Suivant

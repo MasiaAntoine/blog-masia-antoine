@@ -21,7 +21,7 @@ function initials(name: string) {
 </script>
 
 <template>
-  <div v-if="profiles.length" class="flex -space-x-3">
+  <div v-if="profiles.length" class="flex -space-x-3 justify-center sm:justify-start">
       <div
         v-for="profile in profiles"
         :key="profile.id"

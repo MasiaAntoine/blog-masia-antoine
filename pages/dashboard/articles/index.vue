@@ -91,14 +91,14 @@ function formatDate(date: string) {
     <template v-else>
 
     <!-- En-tête -->
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-foreground">Mes articles</h1>
         <p class="mt-1 text-sm text-muted-foreground">Gérez vos articles et brouillons</p>
       </div>
       <NuxtLink
         to="/dashboard/articles/new"
-        class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:w-auto sm:py-2.5"
       >
         <Plus class="h-4 w-4" />
         Nouvel article
@@ -126,8 +126,8 @@ function formatDate(date: string) {
     </div>
 
     <!-- Table articles -->
-    <div v-else class="overflow-hidden rounded-xl border border-border">
-      <table class="w-full text-sm">
+    <div v-else class="overflow-x-auto rounded-xl border border-border">
+      <table class="w-full min-w-[500px] text-sm">
         <thead class="bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <tr>
             <th class="px-5 py-3 text-left">Titre</th>
@@ -144,9 +144,9 @@ function formatDate(date: string) {
             class="bg-background transition-colors hover:bg-muted/20"
           >
             <!-- Titre -->
-            <td class="max-w-xs px-5 py-4">
+            <td class="max-w-[200px] px-5 py-4 sm:max-w-xs">
               <p class="truncate font-medium text-foreground">{{ article.title }}</p>
-              <p class="mt-0.5 font-mono text-xs text-muted-foreground">/blog/{{ article.slug }}</p>
+              <p class="mt-0.5 truncate font-mono text-xs text-muted-foreground">/blog/{{ article.slug }}</p>
             </td>
 
             <!-- Date -->
@@ -185,14 +185,14 @@ function formatDate(date: string) {
             </td>
 
             <!-- Actions -->
-            <td class="px-5 py-4">
-              <div class="flex items-center justify-end gap-1.5">
+            <td class="px-3 py-4 sm:px-5">
+              <div class="flex items-center justify-end gap-0.5 sm:gap-1">
                 <!-- Voir sur le blog (si publié) -->
                 <a
                   v-if="article.published"
                   :href="`/blog/${article.slug}`"
                   target="_blank"
-                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  class="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground touch-manipulation"
                   title="Voir sur le blog"
                 >
                   <ExternalLink class="h-4 w-4" />
@@ -201,7 +201,7 @@ function formatDate(date: string) {
                 <!-- Toggle publish -->
                 <button
                   :disabled="togglingId === article.id"
-                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+                  class="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50 touch-manipulation"
                   :title="article.published ? 'Dépublier' : 'Publier'"
                   @click="togglePublish(article)"
                 >
@@ -212,7 +212,7 @@ function formatDate(date: string) {
                 <!-- Stats -->
                 <NuxtLink
                   :to="`/dashboard/articles/${article.id}/stats`"
-                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                  class="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary touch-manipulation"
                   title="Statistiques"
                 >
                   <BarChart2 class="h-4 w-4" />
@@ -221,7 +221,7 @@ function formatDate(date: string) {
                 <!-- Modifier -->
                 <NuxtLink
                   :to="`/dashboard/articles/${article.id}/edit`"
-                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  class="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground touch-manipulation"
                   title="Modifier"
                 >
                   <Pencil class="h-4 w-4" />
@@ -230,7 +230,7 @@ function formatDate(date: string) {
                 <!-- Supprimer -->
                 <button
                   :disabled="deletingId === article.id"
-                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                  class="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 touch-manipulation"
                   title="Supprimer"
                   @click="confirmDelete(article)"
                 >

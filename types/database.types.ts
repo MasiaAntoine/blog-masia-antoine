@@ -6,6 +6,43 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export interface Database {
   public: {
     Tables: {
+      product_placement_presets: {
+        Row: {
+          id: string
+          author_id: string
+          title: string
+          description: string
+          url: string
+          image: string
+          cta: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          author_id: string
+          title: string
+          description?: string
+          url: string
+          image?: string
+          cta?: string
+          created_at?: string
+        }
+        Update: {
+          title?: string
+          description?: string
+          url?: string
+          image?: string
+          cta?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'product_placement_presets_author_id_fkey'
+            columns: ['author_id']
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       profiles: {
         Row: {
           id: string

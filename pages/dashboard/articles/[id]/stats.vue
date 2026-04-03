@@ -264,16 +264,16 @@ function changeLabel(n: number | undefined): string {
   <div class="p-6 lg:p-8">
 
     <!-- Navigation -->
-    <div class="mb-6 flex items-center gap-3">
+    <div class="mb-6 flex min-w-0 flex-wrap items-center gap-2">
       <NuxtLink
         to="/dashboard/articles"
-        class="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        class="inline-flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft class="h-4 w-4" />
         Mes articles
       </NuxtLink>
-      <span class="text-border">/</span>
-      <span class="truncate max-w-xs text-sm font-medium text-foreground">
+      <span class="shrink-0 text-border">/</span>
+      <span class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
         {{ stats?.article.title ?? '…' }}
       </span>
     </div>
@@ -291,12 +291,12 @@ function changeLabel(n: number | undefined): string {
       </div>
 
       <!-- Onglets période -->
-      <div class="flex shrink-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/30 p-1">
+      <div class="flex w-full shrink-0 items-center gap-1 overflow-x-auto rounded-lg border border-border bg-muted/30 p-1 sm:w-auto">
         <button
           v-for="p in periods"
           :key="p.key"
           :class="[
-            'rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-150',
+            'shrink-0 rounded-md px-3 py-2 text-xs font-semibold transition-all duration-150 touch-manipulation',
             currentPeriod === p.key
               ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground',

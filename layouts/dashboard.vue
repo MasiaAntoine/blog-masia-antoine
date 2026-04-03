@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LayoutDashboard, FileText, User, LogOut, ExternalLink, ChevronRight, BarChart2 } from 'lucide-vue-next'
+import { Menu, FileText, User, LogOut, ExternalLink, ChevronRight, BarChart2 } from 'lucide-vue-next'
 
 const client = useSupabaseClient()
 const route = useRoute()
@@ -101,10 +101,11 @@ const sidebarOpen = ref(false)
         <span class="font-semibold text-sm">Dashboard</span>
       </div>
       <button
-        class="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
+        class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground hover:bg-muted touch-manipulation"
+        aria-label="Menu"
         @click="sidebarOpen = !sidebarOpen"
       >
-        <LayoutDashboard class="h-5 w-5" />
+        <Menu class="h-5 w-5" />
       </button>
     </div>
 
@@ -133,13 +134,38 @@ const sidebarOpen = ref(false)
           </NuxtLink>
         </nav>
         <div class="border-t border-border p-3 space-y-1">
+          <a
+            href="/"
+            target="_blank"
+            class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            @click="sidebarOpen = false"
+          >
+            <ExternalLink class="h-4 w-4 shrink-0" />
+            Voir le blog
+          </a>
           <button
-            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            class="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             @click="signOut"
           >
             <LogOut class="h-4 w-4 shrink-0" />
             Déconnexion
           </button>
+          <!-- Identité -->
+          <div v-if="profile" class="mt-2 flex items-center gap-2.5 rounded-lg border border-border bg-muted/40 px-3 py-2">
+            <img
+              v-if="profile.avatar_url"
+              :src="profile.avatar_url"
+              :alt="profile.name"
+              class="h-7 w-7 shrink-0 rounded-full object-cover"
+            />
+            <div v-else class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
+              {{ profile.name?.charAt(0)?.toUpperCase() ?? '?' }}
+            </div>
+            <div class="min-w-0">
+              <p class="truncate text-xs font-semibold text-foreground">{{ profile.name || '—' }}</p>
+              <p class="truncate text-xs text-muted-foreground">{{ profile.role || 'Auteur' }}</p>
+            </div>
+          </div>
         </div>
       </aside>
     </div>

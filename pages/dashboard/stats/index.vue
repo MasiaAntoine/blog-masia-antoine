@@ -229,12 +229,12 @@ const kpis = computed(() => [
       </div>
 
       <!-- Onglets période -->
-      <div class="flex shrink-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/30 p-1">
+      <div class="flex w-full shrink-0 items-center gap-1 overflow-x-auto rounded-lg border border-border bg-muted/30 p-1 sm:w-auto">
         <button
           v-for="p in periods"
           :key="p.key"
           :class="[
-            'rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-150',
+            'shrink-0 rounded-md px-3 py-2 text-xs font-semibold transition-all duration-150 touch-manipulation',
             currentPeriod === p.key
               ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground',
@@ -319,17 +319,17 @@ const kpis = computed(() => [
     </div>
 
     <!-- ── Tableau par article ─────────────────────────────── -->
-    <div class="overflow-hidden rounded-xl border border-border">
+    <div class="overflow-x-auto rounded-xl border border-border">
 
       <!-- En-tête tableau -->
-      <div class="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-3">
+      <div class="flex flex-col gap-2 border-b border-border bg-muted/40 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Articles</p>
         <!-- Tri -->
-        <div class="flex items-center gap-1">
-          <span class="text-xs text-muted-foreground">Trier par</span>
+        <div class="flex items-center gap-1.5">
+          <span class="shrink-0 text-xs text-muted-foreground">Trier par</span>
           <select
             v-model="sortBy"
-            class="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+            class="min-h-[36px] flex-1 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 sm:flex-none"
           >
             <option value="views">Vues</option>
             <option value="sessions">Visiteurs</option>
@@ -356,7 +356,7 @@ const kpis = computed(() => [
       </div>
 
       <!-- Lignes -->
-      <table v-else class="w-full text-sm">
+      <table v-else class="w-full min-w-[560px] text-sm">
         <thead class="hidden border-b border-border bg-muted/20 text-xs font-medium text-muted-foreground sm:table-header-group">
           <tr>
             <th class="px-5 py-2.5 text-left">Article</th>
@@ -375,22 +375,20 @@ const kpis = computed(() => [
           >
             <!-- Titre + slug -->
             <td class="px-5 py-3.5">
-              <div class="flex items-center gap-2">
-                <div class="min-w-0 flex-1">
-                  <p class="truncate font-medium text-foreground">{{ art.title }}</p>
-                  <div class="flex items-center gap-2">
-                    <span class="truncate font-mono text-xs text-muted-foreground">/blog/{{ art.slug }}</span>
-                    <span
-                      :class="[
-                        'shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium',
-                        art.published
-                          ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                          : 'bg-muted text-muted-foreground',
-                      ]"
-                    >
-                      {{ art.published ? 'Publié' : 'Brouillon' }}
-                    </span>
-                  </div>
+              <div class="min-w-0">
+                <p class="truncate font-medium text-foreground">{{ art.title }}</p>
+                <div class="flex min-w-0 items-center gap-2">
+                  <span class="min-w-0 truncate font-mono text-xs text-muted-foreground">/blog/{{ art.slug }}</span>
+                  <span
+                    :class="[
+                      'shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium',
+                      art.published
+                        ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                        : 'bg-muted text-muted-foreground',
+                    ]"
+                  >
+                    {{ art.published ? 'Publié' : 'Brouillon' }}
+                  </span>
                 </div>
               </div>
             </td>
@@ -419,19 +417,19 @@ const kpis = computed(() => [
 
             <!-- Lien stats article -->
             <td class="px-4 py-3.5 text-right">
-              <div class="flex items-center justify-end gap-1.5">
+              <div class="flex items-center justify-end gap-0.5">
                 <a
                   v-if="art.published"
                   :href="`/blog/${art.slug}`"
                   target="_blank"
-                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  class="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground touch-manipulation"
                   title="Voir l'article"
                 >
                   <ExternalLink class="h-3.5 w-3.5" />
                 </a>
                 <NuxtLink
                   :to="`/dashboard/articles/${art.id}/stats`"
-                  class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                  class="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary touch-manipulation"
                   title="Statistiques détaillées"
                 >
                   <BarChart2 class="h-3.5 w-3.5" />
