@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: article, error } = await client
     .from('articles')
-    .select('*, author:profiles!author_id(name, role, avatar_url)')
+    .select('*, author:profiles!author_id(name, role, avatar_url, cover_color)')
     .eq('slug', slug)
     .eq('published', true)
     .single()
@@ -38,6 +38,7 @@ export default defineEventHandler(async (event) => {
           name: article.author.name,
           role: article.author.role,
           avatar: article.author.avatar_url,
+          coverColor: article.author.cover_color ?? null,
         }
       : null,
   }

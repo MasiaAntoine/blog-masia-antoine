@@ -73,6 +73,7 @@ if (article.value?.cover) {
     authorName: article.value?.author?.name,
     authorRole: article.value?.author?.role,
     authorAvatar: article.value?.author?.avatar,
+    coverColor: article.value?.author?.coverColor ?? undefined,
   })
 }
 
@@ -128,7 +129,7 @@ function trackSidebarClick() {
   const key = 'blog_session_id'
   const id = sessionStorage.getItem(key)
     ?? (() => { const s = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2); sessionStorage.setItem(key, s); return s })()
-  $fetch('/api/track/click', { method: 'POST', body: { article_id: article.value.id, session_id: id } }).catch(() => {})
+  $fetch('/api/track/click', { method: 'POST', body: { article_id: article.value.id, session_id: id, source: 'sidebar' } }).catch(() => {})
 }
 </script>
 

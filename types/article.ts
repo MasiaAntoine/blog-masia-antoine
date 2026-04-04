@@ -19,6 +19,7 @@ export interface PublicArticle {
     name: string
     role: string
     avatar: string | null
+    coverColor: string | null
   } | null
 }
 

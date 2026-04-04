@@ -49,6 +49,7 @@ export interface Database {
           name: string
           role: string
           avatar_url: string | null
+          cover_color: string | null
           updated_at: string | null
         }
         Insert: {
@@ -56,6 +57,7 @@ export interface Database {
           name?: string
           role?: string
           avatar_url?: string | null
+          cover_color?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -63,6 +65,7 @@ export interface Database {
           name?: string
           role?: string
           avatar_url?: string | null
+          cover_color?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -72,12 +75,14 @@ export interface Database {
           id: string
           article_id: string
           session_id: string
+          source: string
           created_at: string
         }
         Insert: {
           id?: string
           article_id: string
           session_id: string
+          source?: string
           created_at?: string
         }
         Update: Record<string, never>

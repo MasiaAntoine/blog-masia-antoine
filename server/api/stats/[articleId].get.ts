@@ -16,6 +16,7 @@ interface PageView {
 interface Click {
   id: string
   session_id: string
+  source: string
   created_at: string
 }
 
@@ -162,7 +163,7 @@ export default defineEventHandler(async (event) => {
 
     client
       .from('product_clicks')
-      .select('id, session_id, created_at')
+      .select('id, session_id, source, created_at')
       .eq('article_id', articleId!)
       .gte('created_at', from.toISOString())
       .lte('created_at', now.toISOString())
@@ -170,7 +171,7 @@ export default defineEventHandler(async (event) => {
 
     client
       .from('product_clicks')
-      .select('id, session_id')
+      .select('id, session_id, source')
       .eq('article_id', articleId!)
       .gte('created_at', prevFrom.toISOString())
       .lt('created_at', from.toISOString()),
@@ -189,9 +190,22 @@ export default defineEventHandler(async (event) => {
     ? groupByHour(current)
     : groupByDay(current, from, days)
 
+  const articleClicks = currentClicks.filter(c => c.source !== 'sidebar')
+  const sidebarClicks = currentClicks.filter(c => c.source === 'sidebar')
+  const prevArticleClicks = previousClicks.filter(c => c.source !== 'sidebar')
+  const prevSidebarClicks = previousClicks.filter(c => c.source === 'sidebar')
+
   const clicksOverTime = isToday
     ? groupByHour(currentClicks)
     : groupByDay(currentClicks, from, days)
+
+  const articleClicksOverTime = isToday
+    ? groupByHour(articleClicks)
+    : groupByDay(articleClicks, from, days)
+
+  const sidebarClicksOverTime = isToday
+    ? groupByHour(sidebarClicks)
+    : groupByDay(sidebarClicks, from, days)
 
   // Extraire les données produit de l'article
   type ProductData = {
@@ -220,15 +234,21 @@ export default defineEventHandler(async (event) => {
       sessions: cur.uniqueSessions,
       avgDuration: cur.avgDuration,
       clicks: currentClicks.length,
+      articleClicks: articleClicks.length,
+      sidebarClicks: sidebarClicks.length,
     },
     changes: {
       views: pct(cur.totalViews, prev.totalViews),
       sessions: pct(cur.uniqueSessions, prev.uniqueSessions),
       avgDuration: pct(cur.avgDuration, prev.avgDuration),
       clicks: pct(currentClicks.length, previousClicks.length),
+      articleClicks: pct(articleClicks.length, prevArticleClicks.length),
+      sidebarClicks: pct(sidebarClicks.length, prevSidebarClicks.length),
     },
     viewsOverTime,
     clicksOverTime,
+    articleClicksOverTime,
+    sidebarClicksOverTime,
     referrers: aggregateReferrers(current),
     os: breakdown(current, 'os'),
     devices: breakdown(current, 'device_type'),

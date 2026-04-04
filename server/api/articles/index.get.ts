@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await client
     .from('articles')
-    .select('id, title, description, slug, date, tags, cover, product, content, author:profiles!author_id(name, role, avatar_url)')
+    .select('id, title, description, slug, date, tags, cover, product, content, author:profiles!author_id(name, role, avatar_url, cover_color)')
     .eq('published', true)
     .order('date', { ascending: false })
 
@@ -29,6 +29,7 @@ export default defineEventHandler(async (event) => {
           name: article.author.name,
           role: article.author.role,
           avatar: article.author.avatar_url,
+          coverColor: article.author.cover_color ?? null,
         }
       : null,
   }))

@@ -43,10 +43,12 @@ interface TimePoint { date: string; count: number }
 interface StatsResponse {
   article: { id: string; title: string; slug: string }
   period: { days: number; from: string; to: string; isToday: boolean }
-  current: { views: number; sessions: number; avgDuration: number; clicks: number }
-  changes: { views: number; sessions: number; avgDuration: number; clicks: number }
+  current: { views: number; sessions: number; avgDuration: number; clicks: number; articleClicks: number; sidebarClicks: number }
+  changes: { views: number; sessions: number; avgDuration: number; clicks: number; articleClicks: number; sidebarClicks: number }
   viewsOverTime: TimePoint[]
   clicksOverTime: TimePoint[]
+  articleClicksOverTime: TimePoint[]
+  sidebarClicksOverTime: TimePoint[]
   referrers: BreakdownRow[]
   os: BreakdownRow[]
   devices: BreakdownRow[]
@@ -194,14 +196,109 @@ function buildChartOptions(labelSuffix: string) {
   }
 }
 
+function buildTwoSeriesChartData(
+  pointsA: TimePoint[], colorA: string, rgbA: string, labelA: string,
+  pointsB: TimePoint[], colorB: string, rgbB: string, labelB: string,
+) {
+  const points = pointsA.length ? pointsA : pointsB
+  const step = Math.max(1, Math.ceil(points.length / MAX_LABELS))
+  const labels = points.map((v, i) =>
+    i % step === 0 || i === points.length - 1 ? formatShortDate(v.date) : '',
+  )
+  const makeDataset = (pts: TimePoint[], color: string, rgb: string, label: string) => ({
+    label,
+    data: pts.map(v => v.count),
+    borderColor: color,
+    backgroundColor: (ctx: ScriptableContext<'line'>) => {
+      const { chart } = ctx
+      if (!chart.chartArea) return `rgba(${rgb}, 0.1)`
+      return makeGradient(chart.ctx, chart.chartArea, rgb)
+    },
+    fill: true,
+    tension: 0.4,
+    pointRadius: 0,
+    pointHoverRadius: 5,
+    pointHoverBorderWidth: 2,
+    pointHoverBackgroundColor: color,
+    pointHoverBorderColor: '#fff',
+    borderWidth: 2.5,
+  })
+  return {
+    labels,
+    datasets: [
+      makeDataset(pointsA, colorA, rgbA, labelA),
+      makeDataset(pointsB, colorB, rgbB, labelB),
+    ],
+  }
+}
+
+function buildTwoSeriesOptions() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 500 },
+    interaction: { mode: 'index' as const, intersect: false },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top' as const,
+        align: 'end' as const,
+        labels: {
+          color: 'rgba(100, 116, 139, 0.9)',
+          font: { size: 11 },
+          boxWidth: 10,
+          boxHeight: 10,
+          borderRadius: 3,
+          useBorderRadius: true,
+          padding: 12,
+        },
+      },
+      tooltip: {
+        backgroundColor: 'rgba(9, 16, 33, 0.97)',
+        borderColor: 'rgba(51, 65, 85, 1)',
+        borderWidth: 1,
+        titleColor: 'rgba(248, 250, 252, 1)',
+        bodyColor: 'rgba(148, 163, 184, 1)',
+        padding: { x: 12, y: 10 },
+        cornerRadius: 8,
+        displayColors: true,
+        boxWidth: 8,
+        boxHeight: 8,
+        callbacks: {
+          title: (items: { label: string }[]) => items[0]?.label ?? '',
+          label: (item: { dataset: { label?: string }; formattedValue: string }) =>
+            ` ${item.dataset.label} : ${item.formattedValue}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: 'rgba(100, 116, 139, 0.9)', font: { size: 11 }, maxRotation: 0, maxTicksLimit: 8 },
+      },
+      y: {
+        beginAtZero: true,
+        grace: '5%',
+        grid: { color: 'rgba(30, 41, 59, 0.7)', drawTicks: false, lineWidth: 1 },
+        border: { display: false },
+        ticks: { color: 'rgba(100, 116, 139, 0.9)', font: { size: 11 }, padding: 10, maxTicksLimit: 5, precision: 0 },
+      },
+    },
+  }
+}
+
 const viewsChartData = computed(() =>
   buildChartData(stats.value?.viewsOverTime ?? [], '#3b82f6', '59, 130, 246'),
 )
 const clicksChartData = computed(() =>
-  buildChartData(stats.value?.clicksOverTime ?? [], '#10b981', '16, 185, 129'),
+  buildTwoSeriesChartData(
+    stats.value?.articleClicksOverTime ?? [], '#10b981', '16, 185, 129', 'Article',
+    stats.value?.sidebarClicksOverTime ?? [], '#f59e0b', '245, 158, 11', 'Sidebar',
+  ),
 )
 const viewsChartOptions = buildChartOptions('vue')
-const clicksChartOptions = buildChartOptions('clic')
+const clicksChartOptions = buildTwoSeriesOptions()
 
 // ── Helpers breakdowns ─────────────────────────────────────
 function rowPct(row: BreakdownRow, list: BreakdownRow[]): number {
@@ -430,13 +527,26 @@ function changeLabel(n: number | undefined): string {
         <div v-if="!loading && stats?.product === null" class="mt-1">
           <p class="text-xs text-muted-foreground">Pas de produit sur cet article</p>
         </div>
-        <div v-else-if="!loading" class="mt-2 flex flex-wrap items-center gap-1 text-xs">
-          <TrendingUp v-if="(stats?.changes.clicks ?? 0) > 0" class="h-3.5 w-3.5 text-green-500" />
-          <TrendingDown v-else-if="(stats?.changes.clicks ?? 0) < 0" class="h-3.5 w-3.5 text-red-500" />
-          <Minus v-else class="h-3.5 w-3.5 text-muted-foreground" />
-          <span :class="['font-medium', changeClass(stats?.changes.clicks ?? 0)]">
-            {{ changeLabel(stats?.changes.clicks) }}
-          </span>
+        <div v-else-if="!loading" class="mt-2 space-y-1.5">
+          <div class="flex flex-wrap items-center gap-1 text-xs">
+            <TrendingUp v-if="(stats?.changes.clicks ?? 0) > 0" class="h-3.5 w-3.5 text-green-500" />
+            <TrendingDown v-else-if="(stats?.changes.clicks ?? 0) < 0" class="h-3.5 w-3.5 text-red-500" />
+            <Minus v-else class="h-3.5 w-3.5 text-muted-foreground" />
+            <span :class="['font-medium', changeClass(stats?.changes.clicks ?? 0)]">
+              {{ changeLabel(stats?.changes.clicks) }}
+            </span>
+          </div>
+          <!-- Sous-détail article vs sidebar -->
+          <div class="flex items-center gap-3 text-xs text-muted-foreground">
+            <span class="flex items-center gap-1">
+              <span class="inline-block h-2 w-2 rounded-sm bg-emerald-500" />
+              Article : {{ formatNum(stats?.current.articleClicks ?? 0) }}
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="inline-block h-2 w-2 rounded-sm bg-amber-500" />
+              Sidebar : {{ formatNum(stats?.current.sidebarClicks ?? 0) }}
+            </span>
+          </div>
         </div>
       </div>
     </div>

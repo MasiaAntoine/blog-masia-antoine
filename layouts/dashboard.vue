@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Menu, FileText, User, LogOut, ExternalLink, ChevronRight, BarChart2 } from 'lucide-vue-next'
+import { Menu, FileText, User, LogOut, ExternalLink, ChevronRight, BarChart2, Trophy } from 'lucide-vue-next'
 
 const client = useSupabaseClient()
 const route = useRoute()
@@ -20,6 +20,7 @@ onMounted(async () => {
 const navLinks = [
   { to: '/dashboard/articles', label: 'Articles', icon: FileText },
   { to: '/dashboard/stats', label: 'Statistiques', icon: BarChart2 },
+  { to: '/dashboard/leaderboard', label: 'Classement', icon: Trophy },
   { to: '/dashboard/profile', label: 'Mon profil', icon: User },
 ]
 
@@ -34,7 +35,7 @@ const sidebarOpen = ref(false)
 <template>
   <div class="flex min-h-screen bg-background text-foreground antialiased">
     <!-- Sidebar desktop -->
-    <aside class="hidden w-60 shrink-0 flex-col border-r border-border bg-background lg:flex">
+    <aside class="hidden w-60 shrink-0 flex-col border-r border-border bg-background lg:flex sticky top-0 h-screen overflow-y-auto">
       <!-- Header sidebar -->
       <div class="flex h-16 items-center gap-2.5 border-b border-border px-5">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">B</div>
@@ -171,7 +172,7 @@ const sidebarOpen = ref(false)
     </div>
 
     <!-- Contenu principal -->
-    <main class="flex-1 overflow-y-auto pt-14 lg:pt-0">
+    <main class="flex-1 min-w-0 pt-14 lg:pt-0">
       <slot />
     </main>
   </div>

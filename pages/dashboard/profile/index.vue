@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Save, User } from 'lucide-vue-next'
+import { Save, User, Palette } from 'lucide-vue-next'
 
 definePageMeta({ middleware: 'dashboard', layout: 'dashboard' })
 
@@ -7,7 +7,7 @@ const client = useSupabaseClient()
 
 const userId = ref<string | null>(null)
 const userEmail = ref('')
-const form = ref({ name: '', role: '', avatar_url: '' })
+const form = ref({ name: '', role: '', avatar_url: '', cover_color: '#0f172a' })
 const loading = ref(true)
 const isFirstSetup = ref(false)
 const saving = ref(false)
@@ -22,11 +22,55 @@ const errors = computed(() => ({
 
 const isValid = computed(() => !errors.value.name && !errors.value.role && !errors.value.avatar_url)
 
-// Déclencher la validation à la soumission uniquement
 const submitted = ref(false)
 
+const COLOR_PRESETS = [
+  // Bleus
+  { label: 'Ardoise', value: '#0f172a' },
+  { label: 'Marine', value: '#0c2340' },
+  { label: 'Bleu royal', value: '#0f3460' },
+  { label: 'Bleu acier', value: '#1e3a5f' },
+  { label: 'Bleu nuit', value: '#1e3a8a' },
+  { label: 'Bleu électrique', value: '#1d4ed8' },
+  // Indigo / Violet
+  { label: 'Indigo', value: '#312e81' },
+  { label: 'Indigo vif', value: '#3730a3' },
+  { label: 'Violet profond', value: '#4c1d95' },
+  { label: 'Violet nuit', value: '#3b0764' },
+  { label: 'Prune', value: '#581c87' },
+  { label: 'Aubergine', value: '#7c1d6f' },
+  // Bordeaux / Rose
+  { label: 'Fuchsia', value: '#701a75' },
+  { label: 'Rose nuit', value: '#831843' },
+  { label: 'Bordeaux', value: '#9f1239' },
+  { label: 'Grenat', value: '#881337' },
+  // Rouges / Briques
+  { label: 'Rouge nuit', value: '#7f1d1d' },
+  { label: 'Rubis', value: '#991b1b' },
+  { label: 'Brique', value: '#7c2d12' },
+  { label: 'Rouille', value: '#9a3412' },
+  // Verts
+  { label: 'Forêt', value: '#14532d' },
+  { label: 'Sapin', value: '#166534' },
+  { label: 'Émeraude', value: '#065f46' },
+  { label: 'Teal', value: '#134e4a' },
+  { label: 'Teal vif', value: '#0f766e' },
+  { label: 'Pétrole', value: '#164e63' },
+  // Neutres
+  { label: 'Anthracite', value: '#1f2937' },
+  { label: 'Carbone', value: '#111827' },
+  { label: 'Pierre', value: '#1c1917' },
+  { label: 'Zinc', value: '#18181b' },
+  // Chauds
+  { label: 'Kaki', value: '#365314' },
+  { label: 'Olive', value: '#3f3f00' },
+  { label: 'Café', value: '#451a03' },
+  { label: 'Chocolat', value: '#422006' },
+  { label: 'Bronze', value: '#78350f' },
+  { label: 'Or sombre', value: '#713f12' },
+]
+
 onMounted(async () => {
-  // Récupérer l'utilisateur courant depuis la session (plus fiable que useSupabaseUser au montage)
   const { data: { user } } = await client.auth.getUser()
   userId.value = user?.id ?? null
   userEmail.value = user?.email ?? ''
@@ -38,7 +82,7 @@ onMounted(async () => {
 
   const { data } = await client
     .from('profiles')
-    .select('name, role, avatar_url')
+    .select('name, role, avatar_url, cover_color')
     .eq('id', userId.value)
     .single()
 
@@ -47,6 +91,7 @@ onMounted(async () => {
       name: data.name ?? '',
       role: data.role ?? '',
       avatar_url: data.avatar_url ?? '',
+      cover_color: data.cover_color ?? '#0f172a',
     }
     isFirstSetup.value = !data.name?.trim() && !data.role?.trim()
   }
@@ -73,6 +118,7 @@ async function save() {
       name: form.value.name,
       role: form.value.role,
       avatar_url: form.value.avatar_url || null,
+      cover_color: form.value.cover_color,
     })
     .eq('id', userId.value)
 
@@ -81,7 +127,6 @@ async function save() {
   if (error) {
     errorMsg.value = `Erreur : ${error.message}`
   } else if (isFirstSetup.value) {
-    // Premier setup terminé → aller écrire des articles
     await navigateTo('/dashboard/articles')
   } else {
     successMsg.value = 'Profil mis à jour.'
@@ -114,11 +159,11 @@ async function save() {
       </p>
     </div>
 
-    <div v-if="loading" class="space-y-4 max-w-lg">
-      <div v-for="i in 3" :key="i" class="h-16 animate-pulse rounded-xl border border-border bg-muted/30" />
+    <div v-if="loading" class="space-y-4">
+      <div v-for="i in 4" :key="i" class="h-16 animate-pulse rounded-xl border border-border bg-muted/30" />
     </div>
 
-    <form v-else class="max-w-lg space-y-6" @submit.prevent="save">
+    <form v-else class="space-y-6" @submit.prevent="save">
       <!-- Aperçu avatar -->
       <div class="flex items-center gap-4">
         <div class="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border bg-muted">
@@ -207,6 +252,48 @@ async function save() {
           Conseil : utilisez votre avatar GitHub —
           <code class="rounded bg-muted px-1 py-0.5">https://avatars.githubusercontent.com/u/[ID]</code>
         </p>
+      </div>
+
+      <!-- Couleur des miniatures -->
+      <div class="rounded-xl border border-border bg-muted/20 p-4">
+        <div class="mb-3 flex items-center gap-2">
+          <Palette class="h-4 w-4 text-muted-foreground" />
+          <span class="text-sm font-medium text-foreground">Couleur des miniatures</span>
+        </div>
+        <p class="mb-4 text-xs text-muted-foreground">
+          Fond de toutes vos miniatures d'articles. Choisissez une couleur sombre pour un meilleur rendu du texte blanc.
+        </p>
+
+        <!-- Palettes prédéfinies + picker -->
+        <div class="space-y-3">
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="preset in COLOR_PRESETS"
+              :key="preset.value"
+              type="button"
+              :title="preset.label"
+              class="h-7 w-7 rounded-lg border-2 transition-all duration-150 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              :style="{ backgroundColor: preset.value }"
+              :class="form.cover_color === preset.value ? 'border-primary shadow-md scale-110' : 'border-transparent'"
+              @click="form.cover_color = preset.value"
+            />
+          </div>
+
+        </div>
+
+        <!-- Aperçu live pleine largeur -->
+        <div class="mt-4">
+          <p class="mb-1.5 text-xs text-muted-foreground">Aperçu</p>
+          <div class="h-64 w-full overflow-hidden rounded-xl border border-border shadow-sm">
+            <ArticleCover
+              :title="form.name ? `Article de ${form.name}` : 'Titre de l\'article'"
+              :tags="['Exemple', 'Tag']"
+              :author="{ name: form.name || 'Auteur', role: form.role || '', avatar: form.avatar_url || null }"
+              :color="form.cover_color"
+                size="lg"
+            />
+          </div>
+        </div>
       </div>
 
       <!-- Messages -->

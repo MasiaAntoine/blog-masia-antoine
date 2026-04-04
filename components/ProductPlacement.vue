@@ -19,10 +19,9 @@ function getSessionId(): string {
 }
 
 function trackClick() {
-  // Fire-and-forget — ne bloque pas la navigation
   $fetch('/api/track/click', {
     method: 'POST',
-    body: { article_id: props.articleId, session_id: getSessionId() },
+    body: { article_id: props.articleId, session_id: getSessionId(), source: 'article' },
   }).catch(() => {})
 }
 </script>

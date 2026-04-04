@@ -1,12 +1,15 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   title?: string
   description?: string
   tags?: string[]
   authorName?: string
   authorRole?: string
   authorAvatar?: string
+  coverColor?: string
 }>()
+
+const bgColor = computed(() => props.coverColor ?? '#0f172a')
 </script>
 
 <template>
@@ -16,7 +19,7 @@ defineProps<{
       height: '630px',
       display: 'flex',
       flexDirection: 'column',
-      background: '#0f172a',
+      background: bgColor.value,
       fontFamily: 'Inter, sans-serif',
       padding: '64px',
       position: 'relative',
@@ -32,7 +35,7 @@ defineProps<{
         width: '500px',
         height: '500px',
         borderRadius: '50%',
-        background: 'rgba(59,130,246,0.10)',
+        background: 'rgba(255,255,255,0.07)',
       }"
     />
     <div
@@ -43,7 +46,7 @@ defineProps<{
         width: '300px',
         height: '300px',
         borderRadius: '50%',
-        background: 'rgba(59,130,246,0.06)',
+        background: 'rgba(255,255,255,0.04)',
       }"
     />
 
@@ -54,7 +57,7 @@ defineProps<{
           width: '42px',
           height: '42px',
           borderRadius: '10px',
-          background: '#3b82f6',
+          background: 'rgba(255,255,255,0.20)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -79,8 +82,8 @@ defineProps<{
         :style="{
           padding: '4px 14px',
           borderRadius: '999px',
-          background: 'rgba(59,130,246,0.15)',
-          color: '#93c5fd',
+          background: 'rgba(255,255,255,0.15)',
+          color: 'rgba(255,255,255,0.75)',
           fontSize: '14px',
           fontWeight: '500',
         }"
