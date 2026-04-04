@@ -67,7 +67,8 @@ useHead({
 
 // ─── Recherche & filtres ────────────────────────────────────────
 const searchQuery = ref('')
-const activeTag = ref('')
+const activeTags = ref<string[]>([])
+const selectedAuthors = ref<string[]>([])
 
 const allTags = computed(() => {
   const set = new Set<string>()
@@ -76,20 +77,29 @@ const allTags = computed(() => {
 })
 
 const isFiltering = computed(
-  () => searchQuery.value.trim().length > 0 || activeTag.value.length > 0
+  () => searchQuery.value.trim().length > 0 || activeTags.value.length > 0 || selectedAuthors.value.length > 0,
 )
 
 function clearFilters() {
   searchQuery.value = ''
-  activeTag.value = ''
+  activeTags.value = []
+  selectedAuthors.value = []
   visibleCount.value = INITIAL_COUNT
 }
 
 // ─── Articles filtrés ──────────────────────────────────────────
 const filteredArticles = computed(() => {
   let list = articles.value ?? []
-  if (activeTag.value) {
-    list = list.filter((a) => a.tags?.includes(activeTag.value))
+  if (activeTags.value.length > 0) {
+    list = list.filter((a) => activeTags.value.every(t => a.tags?.includes(t)))
+  }
+  if (selectedAuthors.value.length > 0) {
+    const selectedNames = new Set(
+      (profiles.value ?? [])
+        .filter(p => selectedAuthors.value.includes(p.id))
+        .map(p => p.name),
+    )
+    list = list.filter((a) => a.author?.name && selectedNames.has(a.author.name))
   }
   const q = searchQuery.value.trim().toLowerCase()
   if (q) {
@@ -116,7 +126,7 @@ const regularArticles = computed(() =>
 const totalRegular = computed(() => Math.max(0, (articles.value?.length ?? 0) - 3))
 const canLoadMore = computed(() => visibleCount.value < totalRegular.value)
 
-watch([searchQuery, activeTag], () => {
+watch([searchQuery, activeTags, selectedAuthors], () => {
   visibleCount.value = INITIAL_COUNT
 })
 
@@ -182,10 +192,14 @@ watch(isFiltering, () => {
           </button>
         </div>
 
-        <!-- Filtre par tag (popover) -->
+        <!-- Filtre (tags + auteurs) -->
         <TagFilterPopover
-          v-model="activeTag"
+          :active-tags="activeTags"
           :tags="allTags"
+          :profiles="profiles ?? []"
+          :selected-authors="selectedAuthors"
+          @update:active-tags="activeTags = $event"
+          @update:selected-authors="selectedAuthors = $event"
         />
       </div>
 

@@ -149,7 +149,7 @@ const debouncedCheck = useDebounceFn(checkSlug, 400)
 const tagInput = ref('')
 
 function addTag() {
-  const tag = tagInput.value.trim()
+  const tag = normalizeTag(tagInput.value)
   if (tag && !form.value.tags.includes(tag)) form.value.tags = [...form.value.tags, tag]
   tagInput.value = ''
 }
