@@ -34,16 +34,17 @@ export default defineNuxtConfig({
   // où Nuxt tente de créer le dossier "blog/".
   routeRules: process.env.NODE_ENV === 'production'
     ? {
-        '/':            { isr: 60 },
-        '/blog/**':     { isr: 60 },
-        '/dashboard/**': { ssr: true },
-        '/auth/**':     { ssr: true },
+        '/':                    { isr: 60 },
+        '/blog/**':             { isr: 60 },
+        '/_og/**':              { ssr: true },  // OG images toujours générées à la demande
+        '/dashboard/**':        { ssr: true },
+        '/auth/**':             { ssr: true },
       }
     : {
-        '/':            { ssr: true },
-        '/blog/**':     { ssr: true },
-        '/dashboard/**': { ssr: true },
-        '/auth/**':     { ssr: true },
+        '/':                    { ssr: true },
+        '/blog/**':             { ssr: true },
+        '/dashboard/**':        { ssr: true },
+        '/auth/**':             { ssr: true },
       },
 
   css: ['~/assets/css/main.css'],

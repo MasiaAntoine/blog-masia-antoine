@@ -8,8 +8,6 @@ const props = defineProps<{
   authorAvatar?: string
   coverColor?: string
 }>()
-
-const bgColor = computed(() => props.coverColor ?? '#0f172a')
 </script>
 
 <template>
@@ -19,7 +17,7 @@ const bgColor = computed(() => props.coverColor ?? '#0f172a')
       height: '630px',
       display: 'flex',
       flexDirection: 'column',
-      background: bgColor.value,
+      background: props.coverColor || '#0f172a',
       fontFamily: 'Inter, sans-serif',
       padding: '64px',
       position: 'relative',

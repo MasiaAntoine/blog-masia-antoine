@@ -64,9 +64,7 @@ if (article.value?.cover) {
     twitterImage: article.value.cover,
   })
 } else {
-  // @ts-expect-error — defineOgImage accepts component name + props at runtime
-  defineOgImage({
-    component: 'BlogPostSatori',
+  defineOgImage('BlogPost', {
     title: article.value?.title,
     description: article.value?.description,
     tags: article.value?.tags,
